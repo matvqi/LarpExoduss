@@ -3,19 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wallet Demo</title>
-<meta name="description" content="A static mock wallet interface demo for GitHub Pages. No real crypto, accounts, or transactions." />
+<title>Exoduss 26.6.4</title>
+<meta name="description" content="A static mock wallet interface for GitHub Pages. No real crypto, accounts, or transactions." />
 <meta name="robots" content="noindex, nofollow" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; background: #1a1a1f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
   .titlebar { height: 38px; background: #1c1c21; display: flex; align-items: center; padding: 0 12px; position: relative; border-bottom: 1px solid #111; }
   .traffic-lights { display: flex; gap: 8px; align-items: center; }
-  .tl { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .tl { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; color: #aaa; font-size: 12px; line-height: 1; }
   .tl-red { background: #ff5f57; } .tl-yellow { background: #febc2e; } .tl-green { background: #28c840; }
   .titlebar-name { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; color: #888; }
+  .os-windows .traffic-lights { margin-left: auto; order: 2; gap: 0; height: 100%; }
+  .os-windows .tl { width: 46px; height: 38px; border-radius: 0; background: transparent; color: #aaa; }
+  .os-windows .tl:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .os-windows .tl-red:hover { background: #c42b1c; }
+  .os-windows .tl-red::before { content: "×"; font-size: 17px; }
+  .os-windows .tl-yellow::before { content: "−"; font-size: 18px; }
+  .os-windows .tl-green::before { content: "□"; font-size: 12px; }
+  .os-windows .titlebar { padding: 0 0 0 12px; }
+  .os-windows .titlebar-name { left: 12px; transform: none; }
   .topnav { height: 72px; background: #1c1c21; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #111; }
-  .demo-logo { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+  .app-logo { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
   .logo-icon { width: 36px; height: 36px; }
   .total-balance { font-size: 24px; font-weight: 300; color: #fff; letter-spacing: -0.5px; }
   .total-balance span { font-size: 16px; color: #aaa; font-weight: 300; }
@@ -99,6 +108,11 @@
   .select-input { width: 100%; background: #15151a; border: 1px solid #3a3a48; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; font-family: inherit; margin-bottom: 16px; outline: none; }
   .receive-box { background: #15151a; border: 1px solid #3a3a48; border-radius: 10px; padding: 14px; color: #aaa; font-size: 13px; line-height: 1.45; word-break: break-all; margin-bottom: 14px; }
   .qr-lite { width: 116px; height: 116px; margin: 0 auto 16px; border-radius: 8px; background: linear-gradient(90deg,#eee 50%,transparent 50%), linear-gradient(#eee 50%,transparent 50%), #15151a; background-size: 22px 22px; border: 10px solid #eee; opacity: 0.92; }
+  .platform-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .platform-btn { min-height: 92px; border: 1px solid #3a3a48; border-radius: 10px; background: #15151a; color: #ddd; cursor: pointer; font-family: inherit; text-align: left; padding: 16px; }
+  .platform-btn:hover { border-color: #f0a500; }
+  .platform-btn strong { display: block; color: #fff; font-size: 16px; margin-bottom: 6px; }
+  .platform-btn span { color: #777; font-size: 12px; line-height: 1.35; }
   .is-private .private-value { color: transparent !important; text-shadow: 0 0 10px rgba(255,255,255,0.55); }
   .is-fullscreen .hint { display: none; }
   @media (max-height: 760px) {
@@ -115,15 +129,15 @@
 
 <div class="titlebar">
   <div class="traffic-lights">
-    <div class="tl tl-red" onclick="window.close()"></div>
-    <div class="tl tl-yellow"></div>
-    <div class="tl tl-green"></div>
+    <div class="tl tl-red" data-window-action="close"></div>
+    <div class="tl tl-yellow" data-window-action="minimize"></div>
+    <div class="tl tl-green" data-window-action="maximize"></div>
   </div>
-  <div class="titlebar-name">WALLET DEMO 1.0</div>
+  <div class="titlebar-name">EXODUS 26.6.4</div>
 </div>
 
 <div class="topnav">
-  <div class="demo-logo">
+  <div class="app-logo">
     <svg class="logo-icon" viewBox="0 0 36 36" fill="none">
       <polygon points="18,1 33,9.5 33,26.5 18,35 3,26.5 3,9.5" fill="url(#lg1)"/>
       <polygon points="18,7 27,12 27,22 18,27 9,22 9,12" fill="#1c1c21"/>
@@ -278,7 +292,7 @@
     <div class="activity-feed" id="activity-feed"></div>
     <div class="watchlist-panel" id="watchlist-panel"></div>
     <div class="about-panel">
-      <div class="feed-item"><strong>Mock desktop wallet</strong><span>Local demo only. No network calls or real transactions.</span></div>
+      <div class="feed-item"><strong>Mock desktop wallet</strong><span>Local preview only. No network calls or real transactions.</span></div>
       <div class="feed-item"><strong>Shortcuts</strong><span>Control/Command + A edits holdings. Escape closes modals.</span></div>
       <div class="feed-item"><strong>Storage</strong><span>Balances, watchlist, and privacy are stored in this browser.</span></div>
     </div>
@@ -299,6 +313,23 @@
     <div class="modal-btns">
       <button class="modal-btn cancel" id="btn-cancel">Cancel</button>
       <button class="modal-btn save" id="btn-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay open" id="platform-modal" data-required-modal>
+  <div class="modal small">
+    <h3>Mac or Windows?</h3>
+    <p>Choose the window controls style for this app.</p>
+    <div class="platform-options">
+      <button class="platform-btn" type="button" data-platform-choice="mac">
+        <strong>Mac</strong>
+        <span>Traffic-light buttons on the left.</span>
+      </button>
+      <button class="platform-btn" type="button" data-platform-choice="windows">
+        <strong>Windows</strong>
+        <span>Minimize, maximize, and close on the right.</span>
+      </button>
     </div>
   </div>
 </div>
@@ -334,9 +365,9 @@
 <div class="modal-overlay" id="receive-modal">
   <div class="modal small">
     <h3>Receive <span id="receive-asset-name">Bitcoin</span></h3>
-    <p>Demo address for screen design only.</p>
+    <p>Preview address for screen design only.</p>
     <div class="qr-lite"></div>
-    <div class="receive-box" id="receive-address">bc1q-demo-wallet-preview-only-8x7k</div>
+    <div class="receive-box" id="receive-address">bc1q-wallet-preview-only-8x7k</div>
     <div class="modal-btns">
       <button class="modal-btn cancel" data-close-current>Close</button>
       <button class="modal-btn save" id="btn-copy-address">Copy Address</button>
@@ -347,7 +378,7 @@
 <div class="modal-overlay" id="swap-modal">
   <div class="modal small">
     <h3>Exchange Preview</h3>
-    <p>Mock quote generated from local demo pricing.</p>
+    <p>Mock quote generated from local preview pricing.</p>
     <div class="inline-row">
       <div>
         <div class="field-label">From</div>
@@ -381,7 +412,7 @@
 <div class="hint">Press <kbd>⌃</kbd><kbd>A</kbd> to edit BTC balance</div>
 
 <script>
-  const STORAGE_KEY = 'wallet_demo_data';
+  const STORAGE_KEY = 'wallet_app_data';
   const ASSETS = {
     BTC: { name: 'Bitcoin', glyph: '₿', price: 66128.42, change: 2.84, network: 'Bitcoin', fee: 1.72 },
     ETH: { name: 'Ethereum', glyph: 'Ξ', price: 3488.19, change: 1.16, network: 'Ethereum', fee: 4.31 },
@@ -406,7 +437,8 @@
           watched: [],
           private: false,
           showPercent: false,
-          activities: []
+          activities: [],
+          platform: ''
         };
       }
       return {
@@ -415,10 +447,11 @@
         watched: saved.watched || [],
         private: !!saved.private,
         showPercent: !!saved.showPercent,
-        activities: saved.activities || []
+        activities: saved.activities || [],
+        platform: saved.platform || ''
       };
     } catch(e) {
-      return { selected: 'BTC', assets: baseAssets, watched: [], private: false, showPercent: false, activities: [] };
+      return { selected: 'BTC', assets: baseAssets, watched: [], private: false, showPercent: false, activities: [], platform: '' };
     }
   }
 
@@ -502,6 +535,7 @@
     renderTabs();
     renderMain();
     renderBottom();
+    renderPlatform();
   }
 
   function openEditModal() {
@@ -513,7 +547,24 @@
   }
 
   function openModal(id) { document.getElementById(id).classList.add('open'); }
-  function closeAllModals() { document.querySelectorAll('.modal-overlay.open').forEach(modal => modal.classList.remove('open')); }
+  function closeAllModals() {
+    document.querySelectorAll('.modal-overlay.open').forEach(modal => {
+      if (modal.id !== 'platform-modal' || state.platform) modal.classList.remove('open');
+    });
+  }
+
+  function renderPlatform() {
+    document.body.classList.toggle('os-windows', state.platform === 'windows');
+    document.body.classList.toggle('os-mac', state.platform !== 'windows');
+    document.getElementById('platform-modal').classList.toggle('open', !state.platform);
+  }
+
+  function choosePlatform(platform) {
+    state.platform = platform;
+    save();
+    updateDisplay();
+    toast(platform === 'windows' ? 'Windows controls selected' : 'Mac controls selected');
+  }
 
   function saveChanges() {
     const amount = parseFloat(document.getElementById('input-btc').value.replace(/,/g,''));
@@ -597,8 +648,11 @@
 
   document.querySelectorAll('[data-modal-target]').forEach(button => button.addEventListener('click', () => openModal(button.dataset.modalTarget)));
   document.querySelectorAll('[data-close-current]').forEach(button => button.addEventListener('click', closeAllModals));
-  document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', e => { if (e.target === e.currentTarget) closeAllModals(); }));
+  document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', e => {
+    if (e.target === e.currentTarget && (modal.id !== 'platform-modal' || state.platform)) closeAllModals();
+  }));
   document.querySelectorAll('[data-bottom-view]').forEach(button => button.addEventListener('click', () => switchBottom(button.dataset.bottomView)));
+  document.querySelectorAll('[data-platform-choice]').forEach(button => button.addEventListener('click', () => choosePlatform(button.dataset.platformChoice)));
 
   document.querySelector('[data-action="open-edit"]').addEventListener('click', openEditModal);
   document.querySelector('[data-action="privacy"]').addEventListener('click', () => {
@@ -644,6 +698,10 @@
   document.getElementById('btn-send-preview').addEventListener('click', previewSend);
   document.getElementById('btn-swap-preview').addEventListener('click', previewSwap);
   document.getElementById('btn-copy-address').addEventListener('click', copyAddress);
+  document.querySelector('[data-window-action="maximize"]').addEventListener('click', toggleFullscreen);
+  document.querySelector('[data-window-action="minimize"]').addEventListener('click', () => toast('Minimize is only visual on the web'));
+  document.querySelector('[data-window-action="close"]').addEventListener('click', () => toast('Close is only visual on the web'));
+  document.querySelector('.titlebar-name').addEventListener('click', () => document.getElementById('platform-modal').classList.add('open'));
   document.addEventListener('fullscreenchange', syncFullscreenClass);
   document.addEventListener('dblclick', e => {
     if (!e.target.closest('button, input, select, .modal-overlay')) toggleFullscreen();
