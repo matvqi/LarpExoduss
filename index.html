@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Demo</title>
+<meta name="description" content="A static mock wallet interface demo for GitHub Pages. No real crypto, accounts, or transactions." />
+<meta name="robots" content="noindex, nofollow" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; background: #1a1a1f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+  .titlebar { height: 38px; background: #1c1c21; display: flex; align-items: center; padding: 0 12px; position: relative; border-bottom: 1px solid #111; }
+  .traffic-lights { display: flex; gap: 8px; align-items: center; }
+  .tl { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .tl-red { background: #ff5f57; } .tl-yellow { background: #febc2e; } .tl-green { background: #28c840; }
+  .titlebar-name { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; color: #888; }
+  .topnav { height: 72px; background: #1c1c21; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #111; }
+  .demo-logo { display: flex; align-items: center; gap: 10px; margin-right: 20px; }
+  .logo-icon { width: 36px; height: 36px; }
+  .total-balance { font-size: 24px; font-weight: 300; color: #fff; letter-spacing: -0.5px; }
+  .total-balance span { font-size: 16px; color: #aaa; font-weight: 300; }
+  .nav-center { flex: 1; display: flex; justify-content: center; align-items: center; gap: 4px; }
+  .nav-icon-btn { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: transparent; border: none; position: relative; transition: background 0.15s; }
+  .nav-icon-btn:hover { background: rgba(255,255,255,0.06); }
+  .nav-icon-btn.active::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: #4fc3f7; border-radius: 1px; }
+  .nav-divider { width: 1px; height: 36px; background: #333; margin: 0 6px; }
+  .nav-right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+  .nav-right-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: transparent; border: none; color: #888; transition: color 0.15s; }
+  .nav-right-btn:hover { color: #ccc; }
+  .asset-tabs { height: 56px; background: #1c1c21; display: flex; align-items: stretch; border-bottom: 1px solid #111; padding-left: 12px; }
+  .tab-left { display: flex; align-items: center; gap: 10px; padding-right: 12px; border-right: 1px solid #2a2a30; }
+  .tab-icon-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #aaa; border: none; background: transparent; }
+  .tab-icon-btn:hover { color: #fff; }
+  .tabs-scroll { display: flex; align-items: stretch; flex: 1; overflow: hidden; }
+  .asset-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 20px; cursor: pointer; border-bottom: 2px solid transparent; border-right: 1px solid #2a2a30; min-width: 110px; transition: border-bottom-color 0.15s; }
+  .asset-tab.active .tab-name { color: #f0a500; }
+  .asset-tab.active { border-bottom-color: #f0a500; }
+  .tab-name { font-size: 13px; font-weight: 500; color: #aaa; }
+  .tab-amount { font-size: 11px; color: #666; margin-top: 2px; }
+  .tab-percent { margin-left: auto; display: flex; align-items: center; padding: 0 12px; cursor: pointer; color: #8B5CF6; font-size: 16px; font-weight: 700; }
+  .main { flex: 1; background: linear-gradient(180deg, #1e1e24 0%, #19191e 100%); display: flex; flex-direction: column; align-items: center; overflow: hidden; position: relative; }
+  .top-actions { position: absolute; top: 14px; right: 16px; display: flex; gap: 14px; }
+  .top-action-btn { background: transparent; border: none; cursor: pointer; color: #555; }
+  .top-action-btn:hover { color: #aaa; }
+  .btc-logo { margin-top: 36px; margin-bottom: 20px; }
+  .btc-amount-row { display: flex; align-items: baseline; gap: 6px; }
+  .btc-big { font-size: 72px; font-weight: 200; color: #f0a500; letter-spacing: -3px; line-height: 1; }
+  .btc-label { font-size: 22px; font-weight: 500; color: #f0a500; letter-spacing: 1px; align-self: flex-end; padding-bottom: 8px; }
+  .usd-amount { font-size: 22px; color: #aaa; font-weight: 300; margin-top: 4px; }
+  .usd-amount span { color: #888; }
+  .action-row { display: flex; align-items: center; gap: 16px; margin-top: 36px; }
+  .pill-btn { height: 46px; width: 200px; border-radius: 23px; border: 1.5px solid #f0a500; background: transparent; color: #f0a500; font-size: 15px; font-weight: 500; cursor: pointer; }
+  .pill-btn:hover { background: rgba(240,165,0,0.1); }
+  .round-btn { width: 46px; height: 46px; border-radius: 50%; background: #8a9a00; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .price-chart-bar { width: 100%; margin-top: auto; border-top: 1px solid #2a2a30; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .price-chart-label { font-size: 11px; color: #555; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; }
+  .bottom-tabs { background: #1c1c21; border-top: 1px solid #111; }
+  .bottom-tab-row { display: flex; gap: 24px; padding: 0 20px; height: 40px; align-items: stretch; }
+  .bottom-tab { font-size: 12px; font-weight: 600; color: #555; cursor: pointer; display: flex; align-items: center; padding: 0 2px; border-bottom: 2px solid transparent; letter-spacing: 0.5px; }
+  .bottom-tab.active { color: #fff; border-bottom-color: #fff; }
+  .bottom-content { height: 70px; display: flex; align-items: center; justify-content: center; }
+  .no-activity { font-size: 13px; color: #444; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 1000; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #22222a; border-radius: 14px; border: 1px solid #3a3a48; padding: 28px; width: 360px; box-shadow: 0 24px 80px rgba(0,0,0,0.8); }
+  .modal h3 { font-size: 17px; color: #fff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .modal p { font-size: 12px; color: #666; margin-bottom: 22px; margin-top: 4px; }
+  .field-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
+  .edit-input { width: 100%; background: #15151a; border: 1px solid #3a3a48; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 16px; font-family: inherit; margin-bottom: 16px; outline: none; transition: border-color 0.15s; }
+  .edit-input:focus { border-color: #f0a500; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+  .modal-btn { flex: 1; height: 40px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .modal-btn.cancel { background: #2a2a35; color: #888; }
+  .modal-btn.save { background: #f0a500; color: #000; }
+  .hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); border: 1px solid #333; border-radius: 8px; padding: 7px 14px; font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  kbd { background: #2a2a35; border: 1px solid #444; border-radius: 4px; padding: 1px 5px; font-size: 10px; color: #aaa; font-family: monospace; }
+  .asset-tab.hidden { display: none; }
+  .search-panel { position: absolute; top: 12px; left: 16px; width: 260px; background: #22222a; border: 1px solid #3a3a48; border-radius: 10px; padding: 10px; display: none; z-index: 20; box-shadow: 0 18px 60px rgba(0,0,0,0.55); }
+  .search-panel.open { display: block; }
+  .search-input { width: 100%; height: 36px; background: #15151a; border: 1px solid #3a3a48; border-radius: 8px; color: #fff; padding: 0 10px; outline: none; font-family: inherit; }
+  .watch-dot { width: 7px; height: 7px; border-radius: 50%; background: #4fc3f7; display: inline-block; margin-left: 6px; vertical-align: middle; opacity: 0; }
+  .asset-tab.watched .watch-dot { opacity: 1; }
+  .price-drawer { width: 100%; height: 0; overflow: hidden; border-top: 1px solid #2a2a30; background: #18181d; transition: height 0.18s ease; }
+  .price-drawer.open { height: 132px; }
+  .chart-wrap { height: 100%; padding: 16px 22px; display: grid; grid-template-columns: 1fr 170px; gap: 18px; align-items: center; }
+  .mini-chart { width: 100%; height: 88px; }
+  .chart-stat { border-left: 1px solid #2a2a30; padding-left: 18px; color: #777; font-size: 12px; }
+  .chart-stat strong { display: block; color: #fff; font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+  .bottom-content { padding: 0 20px; }
+  .activity-feed, .about-panel, .watchlist-panel { width: 100%; max-width: 920px; display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .bottom-content[data-view="activity"] .activity-feed, .bottom-content[data-view="about"] .about-panel, .bottom-content[data-view="watchlist"] .watchlist-panel { display: grid; }
+  .feed-item { background: rgba(255,255,255,0.025); border: 1px solid #2f2f39; border-radius: 8px; padding: 10px 12px; }
+  .feed-item strong { display: block; color: #ddd; font-size: 12px; margin-bottom: 4px; }
+  .feed-item span { color: #666; font-size: 11px; }
+  .toast { position: fixed; right: 18px; bottom: 18px; background: #22222a; border: 1px solid #3a3a48; border-radius: 8px; color: #ddd; padding: 10px 14px; font-size: 12px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 1200; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .modal.small { width: 420px; }
+  .inline-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .select-input { width: 100%; background: #15151a; border: 1px solid #3a3a48; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; font-family: inherit; margin-bottom: 16px; outline: none; }
+  .receive-box { background: #15151a; border: 1px solid #3a3a48; border-radius: 10px; padding: 14px; color: #aaa; font-size: 13px; line-height: 1.45; word-break: break-all; margin-bottom: 14px; }
+  .qr-lite { width: 116px; height: 116px; margin: 0 auto 16px; border-radius: 8px; background: linear-gradient(90deg,#eee 50%,transparent 50%), linear-gradient(#eee 50%,transparent 50%), #15151a; background-size: 22px 22px; border: 10px solid #eee; opacity: 0.92; }
+  .is-private .private-value { color: transparent !important; text-shadow: 0 0 10px rgba(255,255,255,0.55); }
+  .is-fullscreen .hint { display: none; }
+  @media (max-height: 760px) {
+    .btc-logo { margin-top: 18px; margin-bottom: 12px; }
+    .btc-big { font-size: 58px; }
+    .action-row { margin-top: 24px; }
+  }
+  @media (max-width: 760px) {
+    .chart-wrap, .activity-feed, .about-panel, .watchlist-panel { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="traffic-lights">
+    <div class="tl tl-red" onclick="window.close()"></div>
+    <div class="tl tl-yellow"></div>
+    <div class="tl tl-green"></div>
+  </div>
+  <div class="titlebar-name">WALLET DEMO 1.0</div>
+</div>
+
+<div class="topnav">
+  <div class="demo-logo">
+    <svg class="logo-icon" viewBox="0 0 36 36" fill="none">
+      <polygon points="18,1 33,9.5 33,26.5 18,35 3,26.5 3,9.5" fill="url(#lg1)"/>
+      <polygon points="18,7 27,12 27,22 18,27 9,22 9,12" fill="#1c1c21"/>
+      <polygon points="18,12 22,14.5 22,19.5 18,22 14,19.5 14,14.5" fill="url(#lg2)"/>
+      <defs>
+        <linearGradient id="lg1" x1="3" y1="1" x2="33" y2="35" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#3b82f6"/>
+        </linearGradient>
+        <linearGradient id="lg2" x1="14" y1="12" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#60a5fa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="total-balance private-value"><span>$</span><span id="total-bal">0.00</span></div>
+  </div>
+  <div class="nav-center">
+    <div class="nav-icon-btn" title="Portfolio">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="10" stroke="#888" stroke-width="2" fill="none"/>
+        <path d="M14 14 L14 5 A9 9 0 0 1 21 20 Z" fill="#f0a500" opacity="0.9"/>
+        <path d="M14 14 L21 20 A9 9 0 0 1 6 19 Z" fill="#8B5CF6" opacity="0.8"/>
+        <path d="M14 14 L6 19 A9 9 0 0 1 14 5 Z" fill="#4fc3f7" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="nav-icon-btn active" title="Wallet">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="3" y="7" width="22" height="16" rx="3" fill="#2a2a35" stroke="#555" stroke-width="1.5"/>
+        <rect x="17" y="12" width="7" height="6" rx="2" fill="#4fc3f7"/>
+        <path d="M3 11 H25" stroke="#555" stroke-width="1.5"/>
+        <rect x="6" y="4" width="10" height="5" rx="1.5" fill="#2a2a35" stroke="#555" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-icon-btn" title="Exchange">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M7 10 H21 M17 6 L21 10 L17 14" stroke="#f0a500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 18 H7 M11 14 L7 18 L11 22" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="nav-icon-btn" title="Buy Crypto">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="10" fill="url(#buy-grad)" opacity="0.9"/>
+        <text x="14" y="19" text-anchor="middle" font-size="13" fill="#000" font-weight="700">$</text>
+        <defs><radialGradient id="buy-grad" cx="40%" cy="40%"><stop offset="0%" stop-color="#a3e635"/><stop offset="100%" stop-color="#4ade80"/></radialGradient></defs>
+      </svg>
+    </div>
+    <div class="nav-icon-btn" title="Apps">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="10" stroke="#555" stroke-width="1.5" fill="none"/>
+        <circle cx="14" cy="14" r="3" fill="#4fc3f7"/>
+        <line x1="14" y1="4" x2="14" y2="8" stroke="#4fc3f7" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="14" y1="20" x2="14" y2="24" stroke="#4fc3f7" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="4" y1="14" x2="8" y2="14" stroke="#4fc3f7" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="14" x2="24" y2="14" stroke="#4fc3f7" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="nav-icon-btn" title="Account">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="10" fill="url(#av-grad)"/>
+        <circle cx="14" cy="11" r="4" fill="rgba(0,0,0,0.3)"/>
+        <path d="M6 22 Q6 17 14 17 Q22 17 22 22" fill="rgba(0,0,0,0.3)"/>
+        <defs><radialGradient id="av-grad" cx="40%" cy="30%"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#7c3aed"/></radialGradient></defs>
+      </svg>
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-right-btn" title="History" data-bottom-view="activity">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+    </button>
+    <button class="nav-right-btn" title="Help" data-bottom-view="about">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+    </button>
+    <button class="nav-right-btn" title="Settings" data-action="privacy">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="asset-tabs">
+  <div class="tab-left">
+    <button class="tab-icon-btn" data-action="sort-assets"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <button class="tab-icon-btn" data-action="search-assets"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+  </div>
+  <div class="tabs-scroll">
+    <div class="asset-tab active" data-symbol="BTC" data-name="Bitcoin"><span class="tab-name">Bitcoin<span class="watch-dot"></span></span><span class="tab-amount private-value" id="tab-btc">0 BTC</span></div>
+    <div class="asset-tab" data-symbol="ETH" data-name="Ethereum"><span class="tab-name">Ethereum<span class="watch-dot"></span></span><span class="tab-amount private-value">0 ETH</span></div>
+    <div class="asset-tab" data-symbol="USDT" data-name="Tether USD"><span class="tab-name">Tether USD<span class="watch-dot"></span></span><span class="tab-amount private-value">0 USDT</span></div>
+    <div class="asset-tab" data-symbol="BNB" data-name="BNB"><span class="tab-name">BNB ✦<span class="watch-dot"></span></span><span class="tab-amount private-value">0 BNB</span></div>
+    <div class="asset-tab" data-symbol="USDC" data-name="USDC"><span class="tab-name">USDC<span class="watch-dot"></span></span><span class="tab-amount private-value">0 USDC</span></div>
+    <div class="asset-tab" data-symbol="XRP" data-name="XRP"><span class="tab-name">XRP<span class="watch-dot"></span></span><span class="tab-amount private-value">0 XRP</span></div>
+    <div class="asset-tab" data-symbol="SOL" data-name="Solana"><span class="tab-name">Solana<span class="watch-dot"></span></span><span class="tab-amount private-value">0 SOL</span></div>
+  </div>
+  <div class="tab-percent" data-action="toggle-percent">%</div>
+</div>
+
+<div class="main">
+  <div class="search-panel" id="search-panel">
+    <input class="search-input" id="asset-search" type="text" placeholder="Search assets" autocomplete="off"/>
+  </div>
+  <div class="top-actions">
+    <button class="top-action-btn" data-action="watch-asset" title="Watch asset"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+    <button class="top-action-btn" data-action="open-edit" title="Edit holdings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg></button>
+  </div>
+  <div class="btc-logo">
+    <svg width="90" height="100" viewBox="0 0 90 100">
+      <defs>
+        <linearGradient id="hex-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f5c518"/><stop offset="100%" stop-color="#e8860a"/>
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <polygon points="45,4 83,25 83,75 45,96 7,75 7,25" fill="url(#hex-grad)" filter="url(#glow)"/>
+      <text id="coin-glyph" x="45" y="66" text-anchor="middle" font-size="44" fill="white" font-weight="700" font-family="-apple-system,sans-serif">₿</text>
+    </svg>
+  </div>
+  <div class="btc-amount-row">
+    <div class="btc-big private-value" id="btc-big">0</div>
+    <div class="btc-label" id="asset-symbol-label">BTC</div>
+  </div>
+  <div class="usd-amount private-value"><span>$</span><span id="usd-display">0.00</span></div>
+  <div class="action-row">
+    <button class="pill-btn" data-modal-target="send-modal">Send</button>
+    <button class="pill-btn" data-modal-target="receive-modal">Receive</button>
+    <button class="round-btn" title="Exchange" data-modal-target="swap-modal">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 10 H17 M13 6 L17 10 L13 14"/><path d="M17 14 H7 M11 10 L7 14 L11 18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="price-chart-bar" data-action="toggle-chart">
+    <span class="price-chart-label">Price Chart</span>
+    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+  </div>
+  <div class="price-drawer" id="price-drawer">
+    <div class="chart-wrap">
+      <svg class="mini-chart" viewBox="0 0 640 100" fill="none">
+        <path d="M0 74 C65 46 97 66 143 38 C197 6 240 62 294 35 C349 8 405 78 463 42 C513 12 560 40 640 18" stroke="#f0a500" stroke-width="4" stroke-linecap="round"/>
+        <path d="M0 74 C65 46 97 66 143 38 C197 6 240 62 294 35 C349 8 405 78 463 42 C513 12 560 40 640 18 V100 H0 Z" fill="#f0a500" opacity="0.08"/>
+      </svg>
+      <div class="chart-stat"><strong id="chart-high">$0.00</strong><span>Estimated high for selected asset</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-tabs">
+  <div class="bottom-tab-row">
+    <div class="bottom-tab active" data-bottom-view="activity">ACTIVITY</div>
+    <div class="bottom-tab" data-bottom-view="watchlist">WATCHLIST</div>
+    <div class="bottom-tab" data-bottom-view="about">ABOUT</div>
+  </div>
+  <div class="bottom-content" data-view="activity">
+    <div class="activity-feed" id="activity-feed"></div>
+    <div class="watchlist-panel" id="watchlist-panel"></div>
+    <div class="about-panel">
+      <div class="feed-item"><strong>Mock desktop wallet</strong><span>Local demo only. No network calls or real transactions.</span></div>
+      <div class="feed-item"><strong>Shortcuts</strong><span>Control/Command + A edits holdings. Escape closes modals.</span></div>
+      <div class="feed-item"><strong>Storage</strong><span>Balances, watchlist, and privacy are stored in this browser.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0a500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit <span id="edit-asset-name">Bitcoin</span> Holdings
+    </h3>
+    <p>Values are saved and persist across refreshes.</p>
+    <div class="field-label">Asset Amount</div>
+    <input class="edit-input" id="input-btc" type="text" placeholder="e.g. 0.68432100" autocomplete="off"/>
+    <div class="field-label">USD Balance</div>
+    <input class="edit-input" id="input-usd" type="text" placeholder="e.g. 45230.50" autocomplete="off"/>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="btn-cancel">Cancel</button>
+      <button class="modal-btn save" id="btn-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="send-modal">
+  <div class="modal small">
+    <h3>Send <span id="send-asset-name">Bitcoin</span></h3>
+    <p>This creates a local preview only. It does not send crypto.</p>
+    <div class="field-label">Recipient</div>
+    <input class="edit-input" id="send-address" type="text" placeholder="Paste mock address" autocomplete="off"/>
+    <div class="inline-row">
+      <div>
+        <div class="field-label">Amount</div>
+        <input class="edit-input" id="send-amount" type="text" placeholder="0.0000" autocomplete="off"/>
+      </div>
+      <div>
+        <div class="field-label">Fee Speed</div>
+        <select class="select-input" id="send-speed">
+          <option>Normal</option>
+          <option>Fast</option>
+          <option>Economy</option>
+        </select>
+      </div>
+    </div>
+    <div class="receive-box" id="send-preview">Enter an amount to preview the mock transfer.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" data-close-current>Cancel</button>
+      <button class="modal-btn save" id="btn-send-preview">Preview</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receive-modal">
+  <div class="modal small">
+    <h3>Receive <span id="receive-asset-name">Bitcoin</span></h3>
+    <p>Demo address for screen design only.</p>
+    <div class="qr-lite"></div>
+    <div class="receive-box" id="receive-address">bc1q-demo-wallet-preview-only-8x7k</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" data-close-current>Close</button>
+      <button class="modal-btn save" id="btn-copy-address">Copy Address</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="swap-modal">
+  <div class="modal small">
+    <h3>Exchange Preview</h3>
+    <p>Mock quote generated from local demo pricing.</p>
+    <div class="inline-row">
+      <div>
+        <div class="field-label">From</div>
+        <select class="select-input" id="swap-from">
+          <option>BTC</option>
+          <option>ETH</option>
+          <option>SOL</option>
+          <option>USDC</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">To</div>
+        <select class="select-input" id="swap-to">
+          <option>USDC</option>
+          <option>ETH</option>
+          <option>SOL</option>
+          <option>BTC</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-label">Amount</div>
+    <input class="edit-input" id="swap-amount" type="text" placeholder="0.01" autocomplete="off"/>
+    <div class="receive-box" id="swap-preview">Enter an amount to preview a mock quote.</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" data-close-current>Cancel</button>
+      <button class="modal-btn save" id="btn-swap-preview">Preview Quote</button>
+    </div>
+  </div>
+</div>
+
+<div class="hint">Press <kbd>⌃</kbd><kbd>A</kbd> to edit BTC balance</div>
+
+<script>
+  const STORAGE_KEY = 'wallet_demo_data';
+  const ASSETS = {
+    BTC: { name: 'Bitcoin', glyph: '₿', price: 66128.42, change: 2.84, network: 'Bitcoin', fee: 1.72 },
+    ETH: { name: 'Ethereum', glyph: 'Ξ', price: 3488.19, change: 1.16, network: 'Ethereum', fee: 4.31 },
+    USDT: { name: 'Tether USD', glyph: '₮', price: 1.00, change: 0.01, network: 'Ethereum', fee: 2.10 },
+    BNB: { name: 'BNB', glyph: 'B', price: 604.77, change: -0.42, network: 'BNB Chain', fee: 0.19 },
+    USDC: { name: 'USDC', glyph: '$', price: 1.00, change: 0.00, network: 'Ethereum', fee: 2.02 },
+    XRP: { name: 'XRP', glyph: 'X', price: 0.52, change: 3.04, network: 'XRP Ledger', fee: 0.01 },
+    SOL: { name: 'Solana', glyph: '◎', price: 151.88, change: -1.21, network: 'Solana', fee: 0.02 }
+  };
+
+  const baseAssets = Object.fromEntries(Object.keys(ASSETS).map(symbol => [symbol, { amount: 0, usd: 0 }]));
+  let state = load();
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const saved = raw ? JSON.parse(raw) : {};
+      if ('btc' in saved || 'usd' in saved) {
+        return {
+          selected: 'BTC',
+          assets: { ...baseAssets, BTC: { amount: Number(saved.btc) || 0, usd: Number(saved.usd) || 0 } },
+          watched: [],
+          private: false,
+          showPercent: false,
+          activities: []
+        };
+      }
+      return {
+        selected: saved.selected || 'BTC',
+        assets: { ...baseAssets, ...(saved.assets || {}) },
+        watched: saved.watched || [],
+        private: !!saved.private,
+        showPercent: !!saved.showPercent,
+        activities: saved.activities || []
+      };
+    } catch(e) {
+      return { selected: 'BTC', assets: baseAssets, watched: [], private: false, showPercent: false, activities: [] };
+    }
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function money(n) { return (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function coin(n) { return Number(n) === 0 ? '0' : parseFloat(Number(n).toFixed(8)).toString(); }
+  function selectedAsset() { return ASSETS[state.selected] || ASSETS.BTC; }
+  function selectedHolding() { return state.assets[state.selected] || { amount: 0, usd: 0 }; }
+  function holdingValue(symbol) {
+    const holding = state.assets[symbol] || { amount: 0, usd: 0 };
+    return Number(holding.usd) || (Number(holding.amount) || 0) * ASSETS[symbol].price;
+  }
+
+  function totalValue() {
+    return Object.keys(ASSETS).reduce((sum, symbol) => sum + holdingValue(symbol), 0);
+  }
+
+  function addActivity(title, detail) {
+    state.activities = [{ title, detail, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }, ...state.activities].slice(0, 9);
+  }
+
+  function toast(message) {
+    let node = document.getElementById('toast');
+    if (!node) {
+      node = document.createElement('div');
+      node.id = 'toast';
+      node.className = 'toast';
+      document.body.appendChild(node);
+    }
+    node.textContent = message;
+    node.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => node.classList.remove('show'), 1800);
+  }
+
+  function renderTabs() {
+    document.querySelectorAll('.asset-tab').forEach(tab => {
+      const symbol = tab.dataset.symbol;
+      const holding = state.assets[symbol] || { amount: 0 };
+      tab.classList.toggle('active', symbol === state.selected);
+      tab.classList.toggle('watched', state.watched.includes(symbol));
+      const amount = tab.querySelector('.tab-amount');
+      amount.textContent = state.showPercent ? `${ASSETS[symbol].change >= 0 ? '+' : ''}${ASSETS[symbol].change.toFixed(2)}%` : `${coin(holding.amount)} ${symbol}`;
+      amount.style.color = state.showPercent && ASSETS[symbol].change < 0 ? '#ff6b6b' : '';
+    });
+  }
+
+  function renderMain() {
+    const asset = selectedAsset();
+    const holding = selectedHolding();
+    const usd = holdingValue(state.selected);
+    document.getElementById('coin-glyph').textContent = asset.glyph;
+    document.getElementById('asset-symbol-label').textContent = state.selected;
+    document.getElementById('btc-big').textContent = coin(holding.amount);
+    document.getElementById('usd-display').textContent = money(usd);
+    document.getElementById('total-bal').textContent = money(totalValue());
+    document.getElementById('chart-high').textContent = `$${money(asset.price * 1.083)}`;
+    document.body.classList.toggle('is-private', state.private);
+    document.getElementById('edit-asset-name').textContent = asset.name;
+    document.getElementById('send-asset-name').textContent = asset.name;
+    document.getElementById('receive-asset-name').textContent = asset.name;
+  }
+
+  function renderBottom() {
+    const feed = document.getElementById('activity-feed');
+    feed.innerHTML = state.activities.length
+      ? state.activities.slice(0, 3).map(item => `<div class="feed-item"><strong>${item.title}</strong><span>${item.time} · ${item.detail}</span></div>`).join('')
+      : '';
+
+    const watched = state.watched.length ? state.watched : ['BTC', 'ETH', 'SOL'];
+    document.getElementById('watchlist-panel').innerHTML = watched.slice(0, 3).map(symbol => {
+      const asset = ASSETS[symbol];
+      return `<div class="feed-item"><strong>${asset.name}</strong><span>$${money(asset.price)} · ${asset.change >= 0 ? '+' : ''}${asset.change.toFixed(2)}%</span></div>`;
+    }).join('');
+  }
+
+  function updateDisplay() {
+    renderTabs();
+    renderMain();
+    renderBottom();
+  }
+
+  function openEditModal() {
+    const holding = selectedHolding();
+    document.getElementById('input-btc').value = holding.amount > 0 ? Number(holding.amount).toFixed(8) : '';
+    document.getElementById('input-usd').value = holdingValue(state.selected) > 0 ? holdingValue(state.selected).toFixed(2) : '';
+    openModal('edit-modal');
+    setTimeout(() => document.getElementById('input-btc').focus(), 60);
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeAllModals() { document.querySelectorAll('.modal-overlay.open').forEach(modal => modal.classList.remove('open')); }
+
+  function saveChanges() {
+    const amount = parseFloat(document.getElementById('input-btc').value.replace(/,/g,''));
+    const usd = parseFloat(document.getElementById('input-usd').value.replace(/,/g,''));
+    const holding = state.assets[state.selected] || { amount: 0, usd: 0 };
+    state.assets[state.selected] = {
+      amount: !isNaN(amount) ? amount : holding.amount,
+      usd: !isNaN(usd) ? usd : holding.usd
+    };
+    addActivity(`Updated ${state.selected}`, `${coin(state.assets[state.selected].amount)} ${state.selected} saved`);
+    save();
+    updateDisplay();
+    closeAllModals();
+    toast('Holdings saved');
+  }
+
+  function switchBottom(view) {
+    document.querySelectorAll('.bottom-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.bottomView === view));
+    document.querySelector('.bottom-content').dataset.view = view;
+  }
+
+  function previewSend() {
+    const amount = parseFloat(document.getElementById('send-amount').value.replace(/,/g,''));
+    const speed = document.getElementById('send-speed').value;
+    const feeFactor = speed === 'Fast' ? 1.75 : speed === 'Economy' ? 0.55 : 1;
+    const fee = selectedAsset().fee * feeFactor;
+    const value = isNaN(amount) ? 0 : amount * selectedAsset().price;
+    document.getElementById('send-preview').textContent = value
+      ? `Mock ${speed.toLowerCase()} send: ${coin(amount)} ${state.selected} (~$${money(value)}) plus ~$${money(fee)} network fee.`
+      : 'Enter an amount to preview the mock transfer.';
+    if (value) {
+      addActivity(`Previewed ${state.selected} send`, `$${money(value)} local preview`);
+      save();
+      updateDisplay();
+    }
+  }
+
+  function previewSwap() {
+    const from = document.getElementById('swap-from').value;
+    const to = document.getElementById('swap-to').value;
+    const amount = parseFloat(document.getElementById('swap-amount').value.replace(/,/g,''));
+    const result = isNaN(amount) ? 0 : (amount * ASSETS[from].price * 0.995) / ASSETS[to].price;
+    document.getElementById('swap-preview').textContent = result
+      ? `${coin(amount)} ${from} ≈ ${coin(result)} ${to}. Includes a mock 0.5% spread.`
+      : 'Enter an amount to preview a mock quote.';
+    if (result) {
+      addActivity(`Previewed ${from}/${to} swap`, `${coin(result)} ${to} estimated`);
+      save();
+      updateDisplay();
+    }
+  }
+
+  function copyAddress() {
+    const address = document.getElementById('receive-address').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(address).catch(() => {});
+    addActivity(`Copied ${state.selected} address`, 'Receive address copied locally');
+    save();
+    updateDisplay();
+    toast('Address copied');
+  }
+
+  function syncFullscreenClass() {
+    document.body.classList.toggle('is-fullscreen', !!document.fullscreenElement);
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }
+
+  document.querySelectorAll('.asset-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      state.selected = tab.dataset.symbol;
+      save();
+      updateDisplay();
+    });
+  });
+
+  document.querySelectorAll('[data-modal-target]').forEach(button => button.addEventListener('click', () => openModal(button.dataset.modalTarget)));
+  document.querySelectorAll('[data-close-current]').forEach(button => button.addEventListener('click', closeAllModals));
+  document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', e => { if (e.target === e.currentTarget) closeAllModals(); }));
+  document.querySelectorAll('[data-bottom-view]').forEach(button => button.addEventListener('click', () => switchBottom(button.dataset.bottomView)));
+
+  document.querySelector('[data-action="open-edit"]').addEventListener('click', openEditModal);
+  document.querySelector('[data-action="privacy"]').addEventListener('click', () => {
+    state.private = !state.private;
+    save();
+    updateDisplay();
+    toast(state.private ? 'Privacy mode on' : 'Privacy mode off');
+  });
+  document.querySelector('[data-action="toggle-percent"]').addEventListener('click', () => {
+    state.showPercent = !state.showPercent;
+    save();
+    updateDisplay();
+  });
+  document.querySelector('[data-action="toggle-chart"]').addEventListener('click', () => document.getElementById('price-drawer').classList.toggle('open'));
+  document.querySelector('[data-action="watch-asset"]').addEventListener('click', () => {
+    state.watched = state.watched.includes(state.selected)
+      ? state.watched.filter(symbol => symbol !== state.selected)
+      : [...state.watched, state.selected];
+    addActivity(state.watched.includes(state.selected) ? `Watching ${state.selected}` : `Unwatched ${state.selected}`, selectedAsset().name);
+    save();
+    updateDisplay();
+    toast('Watchlist updated');
+  });
+  document.querySelector('[data-action="sort-assets"]').addEventListener('click', () => {
+    const list = document.querySelector('.tabs-scroll');
+    [...list.querySelectorAll('.asset-tab')].sort((a, b) => holdingValue(b.dataset.symbol) - holdingValue(a.dataset.symbol)).forEach(tab => list.appendChild(tab));
+    toast('Assets sorted by value');
+  });
+  document.querySelector('[data-action="search-assets"]').addEventListener('click', () => {
+    document.getElementById('search-panel').classList.toggle('open');
+    setTimeout(() => document.getElementById('asset-search').focus(), 40);
+  });
+  document.getElementById('asset-search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('.asset-tab').forEach(tab => {
+      const text = `${tab.dataset.name} ${tab.dataset.symbol}`.toLowerCase();
+      tab.classList.toggle('hidden', q && !text.includes(q));
+    });
+  });
+
+  document.getElementById('btn-cancel').addEventListener('click', closeAllModals);
+  document.getElementById('btn-save').addEventListener('click', saveChanges);
+  document.getElementById('btn-send-preview').addEventListener('click', previewSend);
+  document.getElementById('btn-swap-preview').addEventListener('click', previewSwap);
+  document.getElementById('btn-copy-address').addEventListener('click', copyAddress);
+  document.addEventListener('fullscreenchange', syncFullscreenClass);
+  document.addEventListener('dblclick', e => {
+    if (!e.target.closest('button, input, select, .modal-overlay')) toggleFullscreen();
+  });
+
+  let lastTap = 0;
+  document.addEventListener('touchend', e => {
+    if (e.target.closest('button, input, select, .modal-overlay')) return;
+    const now = Date.now();
+    if (now - lastTap < 320) {
+      e.preventDefault();
+      toggleFullscreen();
+    }
+    lastTap = now;
+  }, { passive: false });
+
+  document.addEventListener('keydown', e => {
+    const open = !!document.querySelector('.modal-overlay.open');
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a' && !open) { e.preventDefault(); openEditModal(); }
+    if (e.key === 'Escape') {
+      closeAllModals();
+      document.getElementById('search-panel').classList.remove('open');
+    }
+    if (e.key === 'Enter' && document.getElementById('edit-modal').classList.contains('open') && document.activeElement.id !== 'btn-cancel') saveChanges();
+  });
+
+  updateDisplay();
+  syncFullscreenClass();
+</script>
+</body>
+</html>
